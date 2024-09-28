@@ -10,7 +10,14 @@ const {
 const {
     createStoryWithSlide,
     getStoryByCategory,
-    getStorybyId
+    getStorybyId,
+    setbookmark,
+    getbookmarkbyId,
+    isLikedslides,
+    unlikeSlides,
+    likeslides,
+    isbookmarked
+    
 }=require('../controller/storyController.js')
 
 const {body}=require('express-validator')
@@ -20,5 +27,15 @@ authRouter.post('/login',login);
 authRouter.post('/createStoryWithSlide',createStoryWithSlide);
 authRouter.get('/getStoryByCategory',getStoryByCategory);
 authRouter.get('/getStorybyId',getStorybyId);
+authRouter.post('/setbookmark',setbookmark);
+authRouter.post('/setbookmark',setbookmark);
+
+authRouter.get('/getbookmarkbyId',getbookmarkbyId);
+authRouter.get('/isbookmarked',isbookmarked);
+
+authRouter.get('/isLikedslides',isLikedslides);
+authRouter.post('/likeslides',likeslides);
+authRouter.post('/unlikeSlides',unlikeSlides);
+
 
 module.exports=authRouter

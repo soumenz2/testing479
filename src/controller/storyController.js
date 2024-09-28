@@ -5,6 +5,8 @@ const { randomUUID } =require('crypto');
 const mongoose = require('mongoose');
 const storyModel = require('../model/storyModel.js');
 const slideModel = require('../model/slideModel.js');
+const bookmarkModel=require('../model/bookmarkModel.js')
+const Likemodel=require('../model/likeModel.js')
 
 
 const createStoryWithSlide=async(req,res)=>{
@@ -34,6 +36,7 @@ const createStoryWithSlide=async(req,res)=>{
             description: slide.description,
             imageOrVideoURl: slide.imageOrVideoURl,
             category: slide.category,
+            likeCount:0
         }));
         await SlideModel.insertMany(newSlide, { session });
         await session.commitTransaction();
@@ -91,19 +94,19 @@ const getStoryByCategory = async (req, res) => {
 
     // Aggregation to get stories grouped by category
     const storyAggregation = [
-      { $match: matchQuery }, // Filter by category
+      { $match: matchQuery }, 
       {
         $group: { // Group stories by category
           _id: "$category",
-          stories: { $push: "$$ROOT" }, // Push all stories into an array under each category
-          totalCount: { $sum: 1 } // Count the total number of stories in each category
+          stories: { $push: "$$ROOT" }, 
+          totalCount: { $sum: 1 } 
         }
       },
       {
         $project: { // Return stories up to the limit
           stories: { $slice: ["$stories", limitInt] },
           category: "$_id",
-          totalCount: 1 // Include totalCount in the response
+          totalCount: 1 
         }
       }
     ];
@@ -164,10 +167,146 @@ const getStorybyId=async (req,res)=>{
     res.status(500).json({error:error.message});
   }
  
+}
+const setbookmark=async(req,res)=>{
+  try{
+    const { userID,slideID}=req.body
+    if (!userID || !slideID) {
+      throw new Error("Missing required fields ");
+  }
+const newBookmarkModel=new bookmarkModel({
+  bookmarkID:randomUUID(),
+  slideID,
+  userID
+})
+await newBookmarkModel.save()
+res.status(200).json({message:"bookmark Added Succesfully",data:newBookmarkModel})
 
+
+
+  }
+  catch(error){
+    res.status(500).json({error:error.message})
+  }
+  
+}
+const resetBookmarkById=async(req,res)=>{
+  try {
+    const { slideID,userID } = req.body; 
+
+
+
+    const result = await Likemodel.findOneAndDelete({ userID, slideID });
+ 
+    if (result) {
+      return res.status(200).json({ message: 'Bookmark removed  successful' });
+    } else {
+      return res.status(404).json({ error: 'Bookmark not found' });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
+const getbookmarkbyId = async (req, res) => {
+  try {
+    const { userID } = req.query;
+    const bookmarkList = await bookmarkModel.find({ userID });
+    console.log(bookmarkList);
+
+    const bookmarkDetailList = await Promise.all(
+      bookmarkList.map(async (bookmark) => {
+        const bookmarkSlide = await slideModel.findOne({ slideID: bookmark.slideID });
+        console.log("data in map: ", bookmarkSlide);
+        
+        // Return only bookmarkSlide
+        return bookmarkSlide;
+      })
+    );
+
+    res.status(200).json({ message: "Bookmark data fetched successfully", data: bookmarkDetailList });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+const isbookmarked =async(req,res)=>{
+  try {
+    const { slideID ,userID} = req.query; 
+    
+
+    const bookmark = await bookmarkModel.findOne({ userID, slideID });
+    if (bookmark) {
+      return res.status(200).json({ isBookmarked: true });
+    } else {
+      return res.status(200).json({ isBookmarked: false });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
 
 }
+const isLikedslides=async(req,res)=>{
+  try {
+    const { slideID ,userID} = req.query; 
+    
 
+    const like = await Likemodel.findOne({ userID, slideID });
+    if (like) {
+      return res.status(200).json({ isLiked: true });
+    } else {
+      return res.status(200).json({ isLiked: false });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+
+}
+const likeslides=async(req,res)=>{
+  if (!userIDfromRedux) {
+    // If user is not logged in, open the login modal
+    setIsLoginOpen(true);
+    return;
+  }
+  try {
+    const { slideID,userID } = req.body;
+
+    const existingLike = await Likemodel.findOne({ userID, slideID });
+    if (existingLike) {
+      return res.status(400).json({ message: 'You have already liked this story.' });
+    }
+
+    
+    const newLike = new Likemodel({ 
+      likeID:randomUUID(),
+      userID,
+       storyID });
+    await newLike.save();
+
+    // Optionally, update the story's like count (if using embedded document)
+    await slideModel.findByIdAndUpdate(slideID, { $inc: { likeCount: 1 } });
+
+    return res.status(200).json({ message: 'Story liked successfully' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
+const unlikeSlides=async(req,res)=>{
+  try {
+    const { slideID,userID } = req.body; 
+
+
+
+    const result = await Likemodel.findOneAndDelete({ userID, slideID });
+    await slideModel.findByIdAndUpdate(slideID, { $inc: { likeCount: 1 } });
+
+    if (result) {
+      return res.status(200).json({ message: 'Unlike successful' });
+    } else {
+      return res.status(404).json({ error: 'Like not found' });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
 
 
 
@@ -175,5 +314,11 @@ const getStorybyId=async (req,res)=>{
 module.exports={
     createStoryWithSlide,
     getStoryByCategory,
-    getStorybyId
+    getStorybyId,
+    setbookmark,
+    getbookmarkbyId,
+    isbookmarked,
+    isLikedslides,
+    unlikeSlides,
+    likeslides
 }

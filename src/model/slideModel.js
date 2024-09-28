@@ -27,7 +27,8 @@ const slideSchema=new mongoose.Schema(
       category:{
         type:String,
         
-      }
+      },
+      likeCount: { type: Number, default: 0 },
 
     }
 )
