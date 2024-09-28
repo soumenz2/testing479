@@ -266,6 +266,7 @@ const likeslides=async(req,res)=>{
     const { slideID,userID } = req.body;
 
     const existingLike = await Likemodel.findOne({ userID, slideID });
+    console.log(existingLike)
     if (existingLike) {
       return res.status(400).json({ message: 'You have already liked this story.' });
     }
@@ -274,13 +275,16 @@ const likeslides=async(req,res)=>{
     const newLike = new Likemodel({ 
       likeID:randomUUID(),
       userID,
-      slideID });
+      slideID
+     });
     await newLike.save();
 
     // Optionally, update the story's like count (if using embedded document)
-    await slideModel.findByIdAndUpdate(slideID, { $inc: { likeCount: 1 } });
+    const slides=await slideModel.findOne({slideID});
+    slides.likeCount +=1;
+    await slides.save()
 
-    return res.status(200).json({ message: 'Story liked successfully' });
+    return res.status(200).json({ message: 'Story liked successfully',data:slides });
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });
   }
@@ -292,10 +296,14 @@ const unlikeSlides=async(req,res)=>{
 
 
     const result = await Likemodel.findOneAndDelete({ userID, slideID });
-    await slideModel.findByIdAndUpdate(slideID, { $inc: { likeCount: 1 } });
+    console.log(result)
+    const slides=await slideModel.findOne({slideID});
+    slides.likeCount -=1;
+    await slides.save()
+
 
     if (result) {
-      return res.status(200).json({ message: 'Unlike successful' });
+      return res.status(200).json({ message: 'Unlike successful',data:slides });
     } else {
       return res.status(404).json({ error: 'Like not found' });
     }
