@@ -274,7 +274,7 @@ const likeslides=async(req,res)=>{
     const newLike = new Likemodel({ 
       likeID:randomUUID(),
       userID,
-       storyID });
+      slideID });
     await newLike.save();
 
     // Optionally, update the story's like count (if using embedded document)
