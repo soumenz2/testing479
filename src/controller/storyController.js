@@ -261,11 +261,7 @@ const isLikedslides=async(req,res)=>{
 
 }
 const likeslides=async(req,res)=>{
-  if (!userIDfromRedux) {
-    // If user is not logged in, open the login modal
-    setIsLoginOpen(true);
-    return;
-  }
+
   try {
     const { slideID,userID } = req.body;
 
