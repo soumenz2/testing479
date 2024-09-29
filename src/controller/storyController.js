@@ -6,7 +6,8 @@ const mongoose = require('mongoose');
 const storyModel = require('../model/storyModel.js');
 const slideModel = require('../model/slideModel.js');
 const bookmarkModel=require('../model/bookmarkModel.js')
-const Likemodel=require('../model/likeModel.js')
+const Likemodel=require('../model/likeModel.js');
+const likeModel = require('../model/likeModel.js');
 
 
 const createStoryWithSlide=async(req,res)=>{
@@ -155,6 +156,39 @@ const getStoryByCategory = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+const getUserStory = async (req, res) => {
+  try {
+    const { userID, limit = 4 } = req.query; // Default limit to 4
+    const limitInt = parseInt(limit);
+
+    // Fetch user's stories
+    const userStories = await storyModel.find({ userID });
+    const totalCount = userStories.length; // Get the total count of user stories
+
+    // Fetch only the limited number of stories
+    const limitedUserStories = await storyModel.find({ userID }).limit(limitInt);
+    
+    // Fetch slides for each story
+    const storiesWithSlides = await Promise.all(limitedUserStories.map(async (story) => {
+      const slideData = await slideModel.find({ storyID: story.storyID });
+      return { ...story.toObject(), slides: slideData }; // Include slides in the story object
+    }));
+
+    // Determine if there are more stories
+    const hasMore = totalCount > limitInt;
+
+    res.status(200).json({
+      message: "User stories fetched successfully",
+      data: storiesWithSlides,
+      hasMore: hasMore // Indicates if there are more stories
+    });
+    
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const getStorybyId=async (req,res)=>{
   try{
     const {storyID}=req.query;
@@ -324,5 +358,6 @@ module.exports={
     isbookmarked,
     isLikedslides,
     unlikeSlides,
-    likeslides
+    likeslides,
+    getUserStory
 }

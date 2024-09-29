@@ -16,7 +16,8 @@ const {
     isLikedslides,
     unlikeSlides,
     likeslides,
-    isbookmarked
+    isbookmarked,
+    getUserStory
     
 }=require('../controller/storyController.js')
 
@@ -27,6 +28,8 @@ authRouter.post('/login',login);
 authRouter.post('/createStoryWithSlide',createStoryWithSlide);
 authRouter.get('/getStoryByCategory',getStoryByCategory);
 authRouter.get('/getStorybyId',getStorybyId);
+authRouter.get('/getUserStory',getUserStory);
+
 authRouter.post('/setbookmark',setbookmark);
 authRouter.post('/setbookmark',setbookmark);
 
