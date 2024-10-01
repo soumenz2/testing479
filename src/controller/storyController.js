@@ -348,7 +348,8 @@ const unlikeSlides=async(req,res)=>{
 
 const updateStory = async (req, res) => {
   try {
-    const { slides } = req.query;
+    const { slides } = req.body;
+    console.log(slides)
     if (!slides || slides.length === 0) {
       return res.status(400).json({ message: "No slides provided" });
     }
