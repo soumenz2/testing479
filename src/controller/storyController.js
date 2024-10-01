@@ -355,7 +355,8 @@ const updateStory = async (req, res) => {
     }
 
     // Find the existing slides based on the first slide's slideID
-    const slideData = await slideModel.find({ storyID: slides[0].storyID });
+    const storyId=slides[0].storyID;
+    const slideData = await slideModel.find({ storyID:storyId });
 
     const storyPreviousLength = slideData.length; 
     const storyCurrentlength = slides.length; 
@@ -373,7 +374,17 @@ const updateStory = async (req, res) => {
       const newSlides = slides.slice(storyPreviousLength); // Get only new slides
 
       for (const newSlide of newSlides) {
-        const slide = new slideModel(newSlide); // Create a new instance of SlideModel
+        const slide = new slideModel({
+          slideID:randomUUID(),
+          storyID:storyId,
+          heading:newSlide.heading,
+          description:newSlide.description,
+          imageOrVideoURl:newSlide.imageOrVideoURl,
+          category:newSlide.category,
+          likeCount:0
+
+
+        }); // Create a new instance of SlideModel
         await slide.save(); // Save each new slide to the database
       }
     }
