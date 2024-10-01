@@ -17,7 +17,8 @@ const {
     unlikeSlides,
     likeslides,
     isbookmarked,
-    getUserStory
+    getUserStory,
+    updateStory
     
 }=require('../controller/storyController.js')
 
@@ -39,6 +40,7 @@ authRouter.get('/isbookmarked',isbookmarked);
 authRouter.get('/isLikedslides',isLikedslides);
 authRouter.post('/likeslides',likeslides);
 authRouter.post('/unlikeSlides',unlikeSlides);
+authRouter.post('/updateStory',updateStory);
 
 
 module.exports=authRouter

@@ -346,6 +346,45 @@ const unlikeSlides=async(req,res)=>{
   }
 }
 
+const updateStory = async (req, res) => {
+  try {
+    const { slides } = req.query;
+    if (!slides || slides.length === 0) {
+      return res.status(400).json({ message: "No slides provided" });
+    }
+
+    // Find the existing slides based on the first slide's slideID
+    const slideData = await slideModel.find({ storyID: slides[0].storyID });
+
+    const storyPreviousLength = slideData.length; 
+    const storyCurrentlength = slides.length; 
+
+
+    for (let i = 0; i < storyPreviousLength; i++) {
+      await slideModel.updateOne(
+        { slideID: slides[i].slideID }, // Match by slideID
+        { $set: slides[i] } // Update with the new slide data
+      );
+    }
+
+    // Insert new slides one by one into SlideModel
+    if (storyCurrentlength > storyPreviousLength) {
+      const newSlides = slides.slice(storyPreviousLength); // Get only new slides
+
+      for (const newSlide of newSlides) {
+        const slide = new slideModel(newSlide); // Create a new instance of SlideModel
+        await slide.save(); // Save each new slide to the database
+      }
+    }
+
+    res.status(200).json({ message: "Slides updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred while updating the slides" });
+  }
+};
+
+
 
 
 
@@ -359,5 +398,6 @@ module.exports={
     isLikedslides,
     unlikeSlides,
     likeslides,
-    getUserStory
+    getUserStory,
+    updateStory
 }
