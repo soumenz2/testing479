@@ -294,6 +294,48 @@ const isLikedslides=async(req,res)=>{
   }
 
 }
+const bookmarklides=async(req,res)=>{
+
+  try {
+    const { slideID,userID } = req.body;
+
+    const existingBookmark = await bookmarkModel.findOne({ userID, slideID });
+    console.log(existingBookmark)
+    if (existingBookmark) {
+      return res.status(400).json({ message: 'You have already bookmarked this slides.' });
+    }
+
+    
+    const newBookmark = new bookmarkModel({ 
+      bookmarkID:randomUUID(),
+      userID,
+      slideID
+     });
+    await newBookmark.save();
+
+
+    return res.status(200).json({ message: 'Bookmark saved successfully',data:newBookmark });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
+const undoBookmarkSlides=async(req,res)=>{
+  try {
+    const { slideID,userID } = req.body; 
+
+
+
+    const result = await bookmarklides.findOneAndDelete({ userID, slideID });
+
+    if (result) {
+      return res.status(200).json({ message: 'Undo bookmark  successfully'});
+    } else {
+      return res.status(404).json({ error: 'Bookmark not found' });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
 const likeslides=async(req,res)=>{
 
   try {
@@ -411,5 +453,7 @@ module.exports={
     unlikeSlides,
     likeslides,
     getUserStory,
-    updateStory
+    updateStory,
+    bookmarklides,
+    undoBookmarkSlides
 }
