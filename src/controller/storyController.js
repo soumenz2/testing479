@@ -262,6 +262,18 @@ const getbookmarkbyId = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+const getBookmarkedSlide=async(req,res)=>{
+  try {
+    const { slideID } = req.query;
+    const slideData = await slideModel.findOne({ slideID });
+    console.log(slideData);
+
+    res.status(200).json({ message: "Bookmark slide details  fetched successfully", data: slideData });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+
+}
 const isbookmarked =async(req,res)=>{
   try {
     const { slideID ,userID} = req.query; 
@@ -455,5 +467,6 @@ module.exports={
     getUserStory,
     updateStory,
     bookmarklides,
-    undoBookmarkSlides
+    undoBookmarkSlides,
+    getBookmarkedSlide
 }
