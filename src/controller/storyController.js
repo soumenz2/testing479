@@ -334,13 +334,14 @@ const bookmarklides=async(req,res)=>{
 const undoBookmarkSlides=async(req,res)=>{
   try {
     const { slideID,userID } = req.body; 
+    
 
 
 
-    const result = await bookmarklides.findOneAndDelete({ userID, slideID });
+    const result = await bookmarkModel.findOneAndDelete({ userID, slideID });
 
     if (result) {
-      return res.status(200).json({ message: 'Undo bookmark  successfully'});
+      return res.status(200).json({ message: 'Undo bookmark  successfully',});
     } else {
       return res.status(404).json({ error: 'Bookmark not found' });
     }
@@ -377,6 +378,7 @@ const likeslides=async(req,res)=>{
     return res.status(500).json({ error: 'Server error' });
   }
 }
+
 const unlikeSlides=async(req,res)=>{
   try {
     const { slideID,userID } = req.body; 
