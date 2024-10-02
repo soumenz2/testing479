@@ -9,7 +9,7 @@ app.use(bodyparser.urlencoded({
   }));
 
   app.use(cors({
-    origin: ['http://localhost:3000','https://storyapp-three.vercel.app/'],
+    origin: ['http://localhost:3000','https://storyapp-three.vercel.app'],
     methods: 'GET,POST,PUT,DELETE',
     credentials: true
   }));
